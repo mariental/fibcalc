@@ -41,7 +41,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Akcja: "build-push-action" - zbudowanie i wypchnięcie obrazów na DockerHub registry
+      # Akcja: "build-push-action" - zbudowanie i wypchnięcie obrazów na DockerHub registry oraz GitHub Container registry
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v3
