@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+
     steps:
       # Akcja: "checkout" - sprawdza, czy workflow ma poprawny dostęp do repo
       - name: Checkout code
@@ -33,7 +34,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       # Akcja: "docker/login-action" - logowanie do registru kontenerow
-        - name: Log in to the Container registry
+      - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
