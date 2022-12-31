@@ -74,6 +74,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # konfiguracja dla użycia cache w trybie registry, który umieszczony jest i pobierany z repozytorium na DockerHub
-          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/Cache:FibCalc
-          cache-to: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/Cache:FibCalc
+          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/cache:FibCalc
+          cache-to: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/cache:FibCalc
           
