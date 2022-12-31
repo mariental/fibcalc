@@ -1,39 +1,57 @@
-name: GitHub Action flow to Docker hub 
+name: GitHub Action flow to Docker Hub and GitHub Container Registry 
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - 'main'
+    tags: 
+      - "v*"
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
-  build-push-images:
-    name: Budowa i publikacja obrazu na repozytorium
+  build-and-push-images:
+    name: Budowa i publikacja obrazow
+    # deklaracja wybranego systemu operacyjnego
     runs-on: ubuntu-20.04
-    permissions:
-      contents: read
-      packages: write
 
     steps:
-      # Akcja: "checkout" - sprawdza, czy workflow ma poprawny dostęp do repo
+      # akcja sprawdzająca, czy workflow ma poprawny dostęp do repozytorium
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Akcja: "docker/setup-buildx-action" - konfiguruje buildx'a, przez co będzie możliwość budowania obrazów na wiele architektur
+      # akcja delarujaca nazwy budowanych obrazow zgodnie z zasadami wersonowania semantycznego
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/FibCalc
+            ghcr.io/${{ github.repository_owner }}/FibCalc
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # konfiguracja buildx'a
       - name: Buildx set-up
         id: buildx
         uses: docker/setup-buildx-action@v2
 
-      # Akcja: "docker/setup-qemu-action" - "instalacja" emelatora dla wielu architektur
+      # "instalacja" emulatora dla wielu architektur
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      # Akcja: "docker/login-action" - logowanie na konto Dockerhub
+      # logowanie na konto Dockerhub
       - name: Login to DockerHub
         uses: docker/login-action@v2 
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      # Akcja: "docker/login-action" - logowanie do registru kontenerow
+      # logowanie do rejestru kontenerow GitHub
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
@@ -41,7 +59,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Akcja: "build-push-action" - zbudowanie i wypchnięcie obrazów na DockerHub registry oraz GitHub Container registry
+      # zbudowanie obrazu za pomocą silnika buildkit i umieszczenie go na DockerHub Registry oraz GitHub Container Registry
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v3
@@ -49,10 +67,11 @@ jobs:
           context: .
           push: true
           file: ./Dockerfile
-          platforms: linux/amd64
-          tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/lab:fibcalc
-            ghcr.io/${{ github.repository_owner }}/lab:fibcalc
-          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/lab:fibcalccache
-          cache-to: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/lab:fibcalccache,mode=min
+          # zadeklarowanie dla jakich architektur będzie dostępny obraz 
+          platforms: linux/amd64, linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # konfiguracja dla użycia cache w trybie registry, który umieszczony jest i pobierany z repozytorium na DockerHub
+          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/lab:FibCalcCache
+          cache-to: type=registry,ref=docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/lab:FibCalcCache
           
