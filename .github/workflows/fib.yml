@@ -59,7 +59,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # zbudowanie obrazu za pomocą silnika buildkit i umieszczenie go na DockerHub Registry oraz GitHub Container Registry
+      # zbudowanie obrazu za pomocą silnika buildkit i umieszczenie go na Docker Hub Registry oraz GitHub Container Registry
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v3
