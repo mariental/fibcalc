@@ -30,6 +30,8 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/FibCalc
             ghcr.io/${{ github.repository_owner }}/FibCalc
           tags: |
+            type=ref,event=branch
+            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
